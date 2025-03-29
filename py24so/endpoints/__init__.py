@@ -2,6 +2,7 @@
 
 from py24so.endpoints.customers import AsyncCustomerEndpoint, CustomerEndpoint
 from py24so.endpoints.invoices import AsyncInvoiceEndpoint, InvoiceEndpoint
+from py24so.endpoints.product_categories import AsyncProductCategoryEndpoint, ProductCategoryEndpoint
 from py24so.endpoints.products import AsyncProductEndpoint, ProductEndpoint
 
 __all__ = [
@@ -11,4 +12,6 @@ __all__ = [
     "AsyncInvoiceEndpoint",
     "ProductEndpoint",
     "AsyncProductEndpoint",
+    "ProductCategoryEndpoint",
+    "AsyncProductCategoryEndpoint",
 ]

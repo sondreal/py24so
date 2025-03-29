@@ -26,6 +26,11 @@ from py24so.models.product import (
     ProductUpdate,
     StockInfo,
 )
+from py24so.models.product_category import (
+    ProductCategory,
+    ProductCategoryCreate,
+    ProductCategoryUpdate,
+)
 
 __all__ = [
     "ClientOptions",
@@ -51,4 +56,8 @@ __all__ = [
     "ProductUpdate",
     "PriceInfo",
     "StockInfo",
+    # Product Category models
+    "ProductCategory",
+    "ProductCategoryCreate",
+    "ProductCategoryUpdate",
 ]

@@ -19,6 +19,7 @@ from py24so.core.exceptions import (
 )
 from py24so.endpoints.customers import AsyncCustomerEndpoint, CustomerEndpoint
 from py24so.endpoints.invoices import AsyncInvoiceEndpoint, InvoiceEndpoint
+from py24so.endpoints.product_categories import AsyncProductCategoryEndpoint, ProductCategoryEndpoint
 from py24so.endpoints.products import AsyncProductEndpoint, ProductEndpoint
 from py24so.models.config import ClientOptions
 
@@ -60,6 +61,7 @@ class Client24SO:
         self.customers = CustomerEndpoint(self._api_client)
         self.invoices = InvoiceEndpoint(self._api_client)
         self.products = ProductEndpoint(self._api_client)
+        self.product_categories = ProductCategoryEndpoint(self._api_client)
 
     def __enter__(self):
         """Context manager entry."""
@@ -110,6 +112,7 @@ class AsyncClient24SO:
         self.customers = AsyncCustomerEndpoint(self._api_client)
         self.invoices = AsyncInvoiceEndpoint(self._api_client)
         self.products = AsyncProductEndpoint(self._api_client)
+        self.product_categories = AsyncProductCategoryEndpoint(self._api_client)
 
     async def __aenter__(self):
         """Async context manager entry."""

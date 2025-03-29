@@ -7,7 +7,7 @@ name = "py24so"
 version = "0.1.0"
 description = "Modern Python client for the 24SevenOffice API"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Sondre Dyrnes", email = "sondre@villdyr.no"}
 ]
 readme = "README.md"
 requires-python = ">=3.9"
