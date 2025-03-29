@@ -139,4 +139,4 @@ def handle_api_error(response: httpx.Response) -> None:
     elif 500 <= status_code < 600:
         raise ServerError(error_message, status_code, response, error_data)
     else:
-        raise APIError(error_message, status_code, response, error_data) 
+        raise APIError(error_message, status_code, response, error_data)

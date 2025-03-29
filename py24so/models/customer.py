@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 class Address(BaseModel):
     """Customer address model."""
-    
+
     street: Optional[str] = None
     city: Optional[str] = None
     postal_code: Optional[str] = None
@@ -16,7 +16,7 @@ class Address(BaseModel):
 
 class Contact(BaseModel):
     """Customer contact person model."""
-    
+
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -26,7 +26,7 @@ class Contact(BaseModel):
 
 class CustomerBase(BaseModel):
     """Base model for customer data."""
-    
+
     name: str
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
@@ -43,13 +43,13 @@ class CustomerBase(BaseModel):
 
 class CustomerCreate(CustomerBase):
     """Model for creating a new customer."""
-    
+
     pass
 
 
 class CustomerUpdate(BaseModel):
     """Model for updating an existing customer."""
-    
+
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
@@ -65,8 +65,8 @@ class CustomerUpdate(BaseModel):
 
 class Customer(CustomerBase):
     """Customer model with additional read-only fields."""
-    
+
     id: str = Field(..., description="Unique customer ID")
     created_at: datetime
     updated_at: datetime
-    is_active: bool = True 
+    is_active: bool = True

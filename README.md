@@ -167,6 +167,23 @@ client = Client24SO(
    pytest
    ```
 
+### Code Formatting
+
+This project uses Black and isort for code formatting. You can format the code using:
+
+```bash
+# Run the formatting script
+python scripts/format_code.py
+
+# Or run the tools directly
+black py24so tests
+isort py24so tests
+```
+
+If the CI checks are failing due to formatting issues, you can:
+1. Run the formatting script locally and push the changes
+2. Use the "Format Code" GitHub Action in your repository
+
 ### Contributing
 
 1. Fork the repository

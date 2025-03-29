@@ -1,0 +1,41 @@
+name: Format Code
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  format:
+    name: Format code with Black and isort
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort
+        
+    - name: Format with Black
+      run: |
+        black py24so tests
+        
+    - name: Sort imports with isort
+      run: |
+        isort py24so tests
+        
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "Apply automatic formatting"
+        branch: ${{ github.head_ref }} 

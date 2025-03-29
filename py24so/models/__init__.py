@@ -3,7 +3,7 @@
 from py24so.models.config import ClientOptions
 from py24so.models.customer import (
     Address,
-    Contact, 
+    Contact,
     Customer,
     CustomerBase,
     CustomerCreate,
@@ -13,17 +13,17 @@ from py24so.models.invoice import (
     Invoice,
     InvoiceBase,
     InvoiceCreate,
-    InvoiceUpdate,
     InvoiceLineItem,
     InvoiceStatus,
     InvoiceTotals,
+    InvoiceUpdate,
 )
 from py24so.models.product import (
+    PriceInfo,
     Product,
     ProductBase,
     ProductCreate,
     ProductUpdate,
-    PriceInfo,
     StockInfo,
 )
 
@@ -48,7 +48,7 @@ __all__ = [
     "Product",
     "ProductBase",
     "ProductCreate",
-    "ProductUpdate", 
+    "ProductUpdate",
     "PriceInfo",
     "StockInfo",
 ]

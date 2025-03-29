@@ -8,7 +8,7 @@ import pytest
 
 from py24so.core.client import APIClient
 from py24so.endpoints.products import ProductEndpoint
-from py24so.models.product import Product, ProductCreate, ProductUpdate, PriceInfo
+from py24so.models.product import PriceInfo, Product, ProductCreate, ProductUpdate
 
 
 @pytest.fixture
@@ -32,14 +32,10 @@ def sample_product_data():
         "name": "Test Product",
         "description": "Product for testing",
         "sku": "TEST-001",
-        "price_info": {
-            "price": 99.99,
-            "currency": "NOK",
-            "vat_rate": 25.0
-        },
+        "price_info": {"price": 99.99, "currency": "NOK", "vat_rate": 25.0},
         "is_active": True,
         "created_at": "2023-03-15T12:00:00Z",
-        "updated_at": "2023-03-15T12:00:00Z"
+        "updated_at": "2023-03-15T12:00:00Z",
     }
 
 
@@ -51,17 +47,14 @@ def test_list_products(product_endpoint, mock_client, sample_product_data):
     mock_client.get.return_value = mock_response
     mock_client.parse_response_list.return_value = [
         Product.model_validate(sample_product_data),
-        Product.model_validate(sample_product_data)
+        Product.model_validate(sample_product_data),
     ]
 
     # Call the method
     result = product_endpoint.list(page=1, page_size=10)
 
     # Verify
-    mock_client.get.assert_called_once_with(
-        "/products",
-        params={"page": 1, "pageSize": 10}
-    )
+    mock_client.get.assert_called_once_with("/products", params={"page": 1, "pageSize": 10})
     assert len(result) == 2
     assert isinstance(result[0], Product)
     assert result[0].id == "123456"
@@ -97,11 +90,7 @@ def test_create_product(product_endpoint, mock_client, sample_product_data):
         name="Test Product",
         description="Product for testing",
         sku="TEST-001",
-        price_info=PriceInfo(
-            price=99.99,
-            currency="NOK",
-            vat_rate=25.0
-        )
+        price_info=PriceInfo(price=99.99, currency="NOK", vat_rate=25.0),
     )
 
     # Call the method
@@ -122,10 +111,7 @@ def test_update_product(product_endpoint, mock_client, sample_product_data):
     mock_client.parse_response.return_value = Product.model_validate(sample_product_data)
 
     # Create the input data
-    product_update = ProductUpdate(
-        name="Updated Product",
-        description="Updated description"
-    )
+    product_update = ProductUpdate(name="Updated Product", description="Updated description")
 
     # Call the method
     result = product_endpoint.update("123456", product_update)
@@ -166,4 +152,4 @@ def test_batch_get_products(product_endpoint, mock_client, sample_product_data):
     assert len(result) == 2
     assert "123456" in result
     assert "789012" in result
-    assert isinstance(result["123456"], Product) 
+    assert isinstance(result["123456"], Product)

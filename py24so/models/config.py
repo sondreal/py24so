@@ -52,4 +52,4 @@ class ClientOptions(BaseModel):
     verify_ssl: Union[bool, str] = Field(
         default=True,
         description="Verify SSL certificates",
-    ) 
+    )

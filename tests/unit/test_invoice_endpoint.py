@@ -10,12 +10,12 @@ import pytest
 from py24so.core.client import APIClient
 from py24so.endpoints.invoices import InvoiceEndpoint
 from py24so.models.invoice import (
-    Invoice, 
-    InvoiceCreate, 
-    InvoiceUpdate, 
-    InvoiceStatus, 
+    Invoice,
+    InvoiceCreate,
     InvoiceLineItem,
-    InvoiceTotals
+    InvoiceStatus,
+    InvoiceTotals,
+    InvoiceUpdate,
 )
 
 
@@ -49,18 +49,14 @@ def sample_invoice_data():
                 "vat_rate": 25.0,
                 "product_id": "PROD-001",
                 "unit": "pcs",
-                "line_total": 199.98
+                "line_total": 199.98,
             }
         ],
         "status": "DRAFT",
         "currency": "NOK",
-        "totals": {
-            "subtotal": 199.98,
-            "vat_amount": 50.00,
-            "total": 249.98
-        },
+        "totals": {"subtotal": 199.98, "vat_amount": 50.00, "total": 249.98},
         "created_at": "2023-03-15T12:00:00Z",
-        "updated_at": "2023-03-15T12:00:00Z"
+        "updated_at": "2023-03-15T12:00:00Z",
     }
 
 
@@ -72,17 +68,14 @@ def test_list_invoices(invoice_endpoint, mock_client, sample_invoice_data):
     mock_client.get.return_value = mock_response
     mock_client.parse_response_list.return_value = [
         Invoice.model_validate(sample_invoice_data),
-        Invoice.model_validate(sample_invoice_data)
+        Invoice.model_validate(sample_invoice_data),
     ]
 
     # Call the method
     result = invoice_endpoint.list(page=1, page_size=10)
 
     # Verify
-    mock_client.get.assert_called_once_with(
-        "/invoices",
-        params={"page": 1, "pageSize": 10}
-    )
+    mock_client.get.assert_called_once_with("/invoices", params={"page": 1, "pageSize": 10})
     assert len(result) == 2
     assert isinstance(result[0], Invoice)
     assert result[0].id == "123456"
@@ -95,27 +88,17 @@ def test_list_invoices_with_filters(invoice_endpoint, mock_client, sample_invoic
     mock_response = MagicMock()
     mock_response.json.return_value = [sample_invoice_data]
     mock_client.get.return_value = mock_response
-    mock_client.parse_response_list.return_value = [
-        Invoice.model_validate(sample_invoice_data)
-    ]
+    mock_client.parse_response_list.return_value = [Invoice.model_validate(sample_invoice_data)]
 
     # Call the method
     result = invoice_endpoint.list(
-        page=1, 
-        page_size=10,
-        status=InvoiceStatus.DRAFT,
-        customer_id="CUST-001"
+        page=1, page_size=10, status=InvoiceStatus.DRAFT, customer_id="CUST-001"
     )
 
     # Verify
     mock_client.get.assert_called_once_with(
         "/invoices",
-        params={
-            "page": 1, 
-            "pageSize": 10, 
-            "status": InvoiceStatus.DRAFT,
-            "customerId": "CUST-001"
-        }
+        params={"page": 1, "pageSize": 10, "status": InvoiceStatus.DRAFT, "customerId": "CUST-001"},
     )
     assert len(result) == 1
 
@@ -156,10 +139,10 @@ def test_create_invoice(invoice_endpoint, mock_client, sample_invoice_data):
                 unit_price=99.99,
                 vat_rate=25.0,
                 product_id="PROD-001",
-                unit="pcs"
+                unit="pcs",
             )
         ],
-        currency="NOK"
+        currency="NOK",
     )
 
     # Call the method
@@ -180,10 +163,7 @@ def test_update_invoice(invoice_endpoint, mock_client, sample_invoice_data):
     mock_client.parse_response.return_value = Invoice.model_validate(sample_invoice_data)
 
     # Create the input data
-    invoice_update = InvoiceUpdate(
-        notes="Updated notes",
-        reference="PO-12345"
-    )
+    invoice_update = InvoiceUpdate(notes="Updated notes", reference="PO-12345")
 
     # Call the method
     result = invoice_endpoint.update("123456", invoice_update)
@@ -213,7 +193,7 @@ def test_send_invoice(invoice_endpoint, mock_client, sample_invoice_data):
     # Update sample data
     sent_invoice = sample_invoice_data.copy()
     sent_invoice["status"] = "SENT"
-    
+
     # Mock the response
     mock_response = MagicMock()
     mock_client.post.return_value = mock_response
@@ -235,7 +215,7 @@ def test_mark_as_paid(invoice_endpoint, mock_client, sample_invoice_data):
     paid_invoice = sample_invoice_data.copy()
     paid_invoice["status"] = "PAID"
     paid_invoice["payment_date"] = "2023-03-20"
-    
+
     # Mock the response
     mock_response = MagicMock()
     mock_client.post.return_value = mock_response
@@ -246,8 +226,7 @@ def test_mark_as_paid(invoice_endpoint, mock_client, sample_invoice_data):
 
     # Verify
     mock_client.post.assert_called_once_with(
-        "/invoices/123456/mark-paid", 
-        json={"paymentDate": "2023-03-20"}
+        "/invoices/123456/mark-paid", json={"paymentDate": "2023-03-20"}
     )
     assert isinstance(result, Invoice)
     assert result.id == "123456"
@@ -261,7 +240,7 @@ def test_create_credit_note(invoice_endpoint, mock_client, sample_invoice_data):
     credit_note["id"] = "CREDIT-001"
     credit_note["is_credit_note"] = True
     credit_note["credited_invoice_id"] = "123456"
-    
+
     # Mock the response
     mock_response = MagicMock()
     mock_client.post.return_value = mock_response
@@ -294,4 +273,4 @@ def test_batch_get_invoices(invoice_endpoint, mock_client, sample_invoice_data):
     assert len(result) == 2
     assert "123456" in result
     assert "789012" in result
-    assert isinstance(result["123456"], Invoice) 
+    assert isinstance(result["123456"], Invoice)
