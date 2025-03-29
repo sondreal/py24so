@@ -199,12 +199,29 @@ This project includes GitHub Actions for continuous integration and deployment:
 1. **CI**: Runs on every push to main and on pull requests to main
    - Tests on multiple Python versions
    - Code quality checks
-   - Code coverage reporting
+   - Code coverage reporting with Codecov
 
 2. **Publish to PyPI**: Triggered on new releases or manually
    - Builds the package
    - Runs tests
    - Publishes to PyPI if all checks pass
+
+3. **Format Code**: Format code automatically with Black and isort
+   - Can be triggered manually
+   - Automatically fixes code style issues
+
+### Setting Up GitHub Actions
+
+To use these GitHub Actions, you need to set up some secrets in your repository:
+
+1. **PyPI Token** (for package publishing):
+   - Generate a token on PyPI: https://pypi.org/manage/account/token/
+   - Add it as a repository secret named `PYPI_API_TOKEN`
+
+2. **Codecov Token** (for code coverage reporting):
+   - Create an account on Codecov and link your repository
+   - Get your repository upload token from Codecov
+   - Add it as a repository secret named `CODECOV_TOKEN`
 
 ### Manual Release
 
