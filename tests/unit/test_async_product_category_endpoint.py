@@ -8,7 +8,11 @@ import pytest
 
 from py24so.core.client import AsyncAPIClient
 from py24so.endpoints.product_categories import AsyncProductCategoryEndpoint
-from py24so.models.product_category import ProductCategory, ProductCategoryCreate, ProductCategoryUpdate
+from py24so.models.product_category import (
+    ProductCategory,
+    ProductCategoryCreate,
+    ProductCategoryUpdate,
+)
 
 
 @pytest.fixture
@@ -32,7 +36,7 @@ def sample_category_data():
         "name": "Shoe accessories",
         "alternativeReference": "dk-45-34",
         "parentId": 0,
-        "modifiedAt": "2023-12-31 18:00:00.000Z"
+        "modifiedAt": "2023-12-31 18:00:00.000Z",
     }
 
 
@@ -52,7 +56,9 @@ async def test_list_categories(async_category_endpoint, mock_async_client, sampl
     result = await async_category_endpoint.list(page=1, page_size=10)
 
     # Verify
-    mock_async_client.get.assert_called_once_with("/productcategories", params={"page": 1, "pageSize": 10})
+    mock_async_client.get.assert_called_once_with(
+        "/productcategories", params={"page": 1, "pageSize": 10}
+    )
     assert len(result) == 2
     assert isinstance(result[0], ProductCategory)
     assert result[0].id == "12"
@@ -67,7 +73,9 @@ async def test_get_category(async_category_endpoint, mock_async_client, sample_c
     # Mock the response
     mock_response = MagicMock()
     mock_async_client.get.return_value = mock_response
-    mock_async_client.parse_response.return_value = ProductCategory.model_validate(sample_category_data)
+    mock_async_client.parse_response.return_value = ProductCategory.model_validate(
+        sample_category_data
+    )
 
     # Call the method
     result = await async_category_endpoint.get("12")
@@ -86,13 +94,13 @@ async def test_create_category(async_category_endpoint, mock_async_client, sampl
     # Mock the response
     mock_response = MagicMock()
     mock_async_client.post.return_value = mock_response
-    mock_async_client.parse_response.return_value = ProductCategory.model_validate(sample_category_data)
+    mock_async_client.parse_response.return_value = ProductCategory.model_validate(
+        sample_category_data
+    )
 
     # Create the input data
     category_create = ProductCategoryCreate(
-        name="Shoe accessories",
-        parentId="0",
-        alternativeReference="dk-45-34"
+        name="Shoe accessories", parentId="0", alternativeReference="dk-45-34"
     )
 
     # Call the method
@@ -112,7 +120,9 @@ async def test_update_category(async_category_endpoint, mock_async_client, sampl
     # Mock the response
     mock_response = MagicMock()
     mock_async_client.patch.return_value = mock_response
-    mock_async_client.parse_response.return_value = ProductCategory.model_validate(sample_category_data)
+    mock_async_client.parse_response.return_value = ProductCategory.model_validate(
+        sample_category_data
+    )
 
     # Create the input data
     category_update = ProductCategoryUpdate(name="Updated Category Name")
@@ -142,7 +152,9 @@ async def test_delete_category(async_category_endpoint, mock_async_client):
 
 
 @pytest.mark.asyncio
-async def test_batch_get_categories(async_category_endpoint, mock_async_client, sample_category_data):
+async def test_batch_get_categories(
+    async_category_endpoint, mock_async_client, sample_category_data
+):
     """Test batch getting product categories asynchronously."""
     # Mock the response
     mock_batch_response = MagicMock()
@@ -158,4 +170,4 @@ async def test_batch_get_categories(async_category_endpoint, mock_async_client, 
     assert len(result) == 2
     assert "12" in result
     assert "15" in result
-    assert isinstance(result["12"], ProductCategory) 
+    assert isinstance(result["12"], ProductCategory)

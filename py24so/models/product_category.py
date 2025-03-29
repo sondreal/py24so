@@ -10,9 +10,15 @@ class ProductCategory(BaseModel):
 
     id: str = Field(..., description="The unique identifier for the product category")
     name: str = Field(..., description="The name of the product category")
-    parent_id: Optional[int] = Field(0, alias="parentId", description="The ID of the parent category")
-    alternative_reference: Optional[str] = Field(None, alias="alternativeReference", description="An alternative reference for the category")
-    modified_at: Optional[str] = Field(None, alias="modifiedAt", description="Timestamp when the category was last modified")
+    parent_id: Optional[int] = Field(
+        0, alias="parentId", description="The ID of the parent category"
+    )
+    alternative_reference: Optional[str] = Field(
+        None, alias="alternativeReference", description="An alternative reference for the category"
+    )
+    modified_at: Optional[str] = Field(
+        None, alias="modifiedAt", description="Timestamp when the category was last modified"
+    )
 
 
 class ProductCategoryCreate(BaseModel):
@@ -21,8 +27,12 @@ class ProductCategoryCreate(BaseModel):
     """
 
     name: str = Field(..., description="The name of the product category")
-    parent_id: Optional[str] = Field("0", alias="parentId", description="The ID of the parent category")
-    alternative_reference: Optional[str] = Field(None, alias="alternativeReference", description="An alternative reference for the category")
+    parent_id: Optional[str] = Field(
+        "0", alias="parentId", description="The ID of the parent category"
+    )
+    alternative_reference: Optional[str] = Field(
+        None, alias="alternativeReference", description="An alternative reference for the category"
+    )
 
 
 class ProductCategoryUpdate(BaseModel):
@@ -31,5 +41,9 @@ class ProductCategoryUpdate(BaseModel):
     """
 
     name: Optional[str] = Field(None, description="The name of the product category")
-    parent_id: Optional[str] = Field(None, alias="parentId", description="The ID of the parent category")
-    alternative_reference: Optional[str] = Field(None, alias="alternativeReference", description="An alternative reference for the category") 
+    parent_id: Optional[str] = Field(
+        None, alias="parentId", description="The ID of the parent category"
+    )
+    alternative_reference: Optional[str] = Field(
+        None, alias="alternativeReference", description="An alternative reference for the category"
+    )

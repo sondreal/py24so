@@ -5,7 +5,11 @@ import httpx
 from py24so.core.batch import BatchRequest
 from py24so.core.client import APIClient, AsyncAPIClient
 from py24so.core.exceptions import NotFoundError
-from py24so.models.product_category import ProductCategory, ProductCategoryCreate, ProductCategoryUpdate
+from py24so.models.product_category import (
+    ProductCategory,
+    ProductCategoryCreate,
+    ProductCategoryUpdate,
+)
 
 
 class ProductCategoryEndpoint:
@@ -227,7 +231,9 @@ class AsyncProductCategoryEndpoint:
         response = await self.client.get(f"{self.base_path}/{category_id}")
         return await self.client.parse_response(response, ProductCategory)
 
-    async def create(self, category: Union[Dict[str, Any], ProductCategoryCreate]) -> ProductCategory:
+    async def create(
+        self, category: Union[Dict[str, Any], ProductCategoryCreate]
+    ) -> ProductCategory:
         """
         Create a new product category asynchronously.
 
@@ -315,4 +321,4 @@ class AsyncProductCategoryEndpoint:
                 if body:
                     categories[category_id] = ProductCategory.model_validate(body)
 
-        return categories 
+        return categories

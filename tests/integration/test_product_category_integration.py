@@ -56,7 +56,7 @@ def test_category_data():
     return ProductCategoryCreate(
         name=f"Integration Test Category {unique_id}",  # Create a unique name
         parentId="0",
-        alternativeReference=f"test-ref-{unique_id}"
+        alternativeReference=f"test-ref-{unique_id}",
     )
 
 
@@ -75,8 +75,7 @@ def test_category_crud(client, test_category_data):
 
     # Update the product category
     update_data = ProductCategoryUpdate(
-        name=f"Updated {test_category_data.name}",
-        alternativeReference=f"updated-ref"
+        name=f"Updated {test_category_data.name}", alternativeReference=f"updated-ref"
     )
     updated_category = client.product_categories.update(category_id, update_data)
     assert updated_category.id == category_id
@@ -109,4 +108,4 @@ def test_category_crud(client, test_category_data):
 
     # Verify category is gone (this should raise a NotFoundError)
     with pytest.raises(Exception):
-        client.product_categories.get(category_id) 
+        client.product_categories.get(category_id)

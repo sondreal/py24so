@@ -8,7 +8,11 @@ import pytest
 
 from py24so.core.client import APIClient
 from py24so.endpoints.product_categories import ProductCategoryEndpoint
-from py24so.models.product_category import ProductCategory, ProductCategoryCreate, ProductCategoryUpdate
+from py24so.models.product_category import (
+    ProductCategory,
+    ProductCategoryCreate,
+    ProductCategoryUpdate,
+)
 
 
 @pytest.fixture
@@ -32,7 +36,7 @@ def sample_category_data():
         "name": "Shoe accessories",
         "alternativeReference": "dk-45-34",
         "parentId": 0,
-        "modifiedAt": "2023-12-31 18:00:00.000Z"
+        "modifiedAt": "2023-12-31 18:00:00.000Z",
     }
 
 
@@ -51,7 +55,9 @@ def test_list_categories(category_endpoint, mock_client, sample_category_data):
     result = category_endpoint.list(page=1, page_size=10)
 
     # Verify
-    mock_client.get.assert_called_once_with("/productcategories", params={"page": 1, "pageSize": 10})
+    mock_client.get.assert_called_once_with(
+        "/productcategories", params={"page": 1, "pageSize": 10}
+    )
     assert len(result) == 2
     assert isinstance(result[0], ProductCategory)
     assert result[0].id == "12"
@@ -87,9 +93,7 @@ def test_create_category(category_endpoint, mock_client, sample_category_data):
 
     # Create the input data
     category_create = ProductCategoryCreate(
-        name="Shoe accessories",
-        parentId="0",
-        alternativeReference="dk-45-34"
+        name="Shoe accessories", parentId="0", alternativeReference="dk-45-34"
     )
 
     # Call the method
@@ -152,4 +156,4 @@ def test_batch_get_categories(category_endpoint, mock_client, sample_category_da
     assert len(result) == 2
     assert "12" in result
     assert "15" in result
-    assert isinstance(result["12"], ProductCategory) 
+    assert isinstance(result["12"], ProductCategory)
