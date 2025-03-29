@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py24so"
+version = "0.1.0"
+description = "Modern Python client for the 24SevenOffice API"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+    "backoff>=2.2.1",
+    "tenacity>=8.2.2",
+    "hishel>=0.0.17",
+    "python-dotenv>=1.0.0",
+    "pytest-asyncio>=0.26.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.1",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",  # Required for async tests
+    "black>=23.3.0",
+    "isort>=5.12.0",
+    "mypy>=1.3.0",
+]
+
+[tool.setuptools]
+packages = ["py24so"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+asyncio_mode = "auto"  # This enables pytest-asyncio for all tests
+asyncio_default_fixture_loop_scope = "function"  # Fix deprecation warning
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
