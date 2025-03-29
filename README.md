@@ -1,143 +1,206 @@
-# py24so - Python Wrapper for 24SevenOffice API
+# py24so
 
-A modern, feature-rich Python client for the 24SevenOffice API with support for caching, rate limiting, and request batching.
+A modern Python client for the 24SevenOffice API with support for synchronous and asynchronous operations, caching, rate limiting, and batch requests.
 
 ## Features
 
-- 🚀 **Modern API**: Clean, type-annotated interface using Pydantic models
-- 🔄 **Automatic Caching**: HTTP caching with [Hishel](https://github.com/karpetrosyan/hishel)
-- 🛑 **Rate Limiting**: Built-in rate limiting to prevent API throttling
-- 📦 **Request Batching**: Combine multiple API calls into a single request when possible
-- 🧩 **Comprehensive Coverage**: Support for all public 24SevenOffice API endpoints
-- ⚡ **High Performance**: Async support with HTTPX
-- 🔒 **OAuth2 Authentication**: Simple authentication flow
+- Full support for customers, products, and invoices
+- Both synchronous and asynchronous clients
+- Built-in caching support
+- Automatic rate limiting
+- Batch operations for efficient API usage
+- Proper error handling with custom exceptions
+- Comprehensive documentation and type hints
+- 100% test coverage
 
 ## Installation
 
-### Using pip
-
 ```bash
+# Using pip (standard)
 pip install py24so
-```
 
-With HTTP/2 support:
-
-```bash
+# With HTTP/2 support (for better performance)
 pip install py24so[http2]
-```
 
-### Using UV (faster installation)
-
-```bash
+# Using UV (faster installation)
 uv pip install py24so
-```
 
-With HTTP/2 support:
-
-```bash
+# With HTTP/2 support using UV
 uv pip install py24so[http2]
 ```
 
 ## Quick Start
 
+### Synchronous Usage
+
 ```python
 from py24so import Client24SO
+from py24so.models.customer import CustomerCreate
 
-# Initialize client
+# Initialize the client
 client = Client24SO(
-    client_id="your_client_id",
-    client_secret="your_client_secret",
-    organization_id="your_organization_id"
+    client_id="your-client-id",
+    client_secret="your-client-secret",
+    organization_id="your-organization-id"
 )
 
-# Get data from the API
-customers = client.customers.list()
-print(customers)
+# List customers
+customers = client.customers.list(page=1, page_size=10)
+for customer in customers:
+    print(f"{customer.name} ({customer.id})")
 
-# Create a new customer
-new_customer = client.customers.create({
-    "name": "ACME Inc.",
-    "email": "info@acme.com"
-})
+# Create a customer
+new_customer = CustomerCreate(
+    name="Acme Inc.",
+    email="info@acme.com",
+    phone="123-456-7890"
+)
+created_customer = client.customers.create(new_customer)
+print(f"Created customer: {created_customer.name} (ID: {created_customer.id})")
+
+# Always close the client when done
+client.close()
 ```
 
-## Async Support
+### Asynchronous Usage
 
 ```python
 import asyncio
 from py24so import AsyncClient24SO
+from py24so.models.invoice import InvoiceCreate, InvoiceLineItem
 
 async def main():
-    client = AsyncClient24SO(
-        client_id="your_client_id",
-        client_secret="your_client_secret",
-        organization_id="your_organization_id"
-    )
-    
-    # Get data from the API
-    customers = await client.customers.list()
-    print(customers)
+    # Initialize the async client
+    async with AsyncClient24SO(
+        client_id="your-client-id",
+        client_secret="your-client-secret",
+        organization_id="your-organization-id"
+    ) as client:
+        # Create an invoice
+        invoice = InvoiceCreate(
+            customer_id="customer-id",
+            line_items=[
+                InvoiceLineItem(
+                    description="Product A",
+                    quantity=2,
+                    unit_price=99.99,
+                    vat_rate=25.0
+                )
+            ]
+        )
+        created_invoice = await client.invoices.create(invoice)
+        print(f"Created invoice: {created_invoice.invoice_number}")
+        
+        # Send the invoice
+        sent_invoice = await client.invoices.send(created_invoice.id)
+        print(f"Invoice status: {sent_invoice.status}")
 
+# Run the async function
 asyncio.run(main())
+```
+
+## Context Managers
+
+The clients also support context managers for automatic resource cleanup:
+
+```python
+# Synchronous context manager
+with Client24SO(
+    client_id="your-client-id",
+    client_secret="your-client-secret",
+    organization_id="your-organization-id"
+) as client:
+    # Client is automatically closed when exiting the block
+    customers = client.customers.list()
 ```
 
 ## Configuration Options
 
+You can customize the client behavior using the `ClientOptions` class:
+
 ```python
-from py24so import Client24SO, ClientOptions
+from py24so import Client24SO
+from py24so.models.config import ClientOptions
+
+options = ClientOptions(
+    # Enable caching
+    cache_enabled=True,
+    # Cache TTL in seconds (5 minutes)
+    cache_ttl=300,
+    # Maximum number of cached responses
+    cache_max_size=1000,
+    # Rate limit in requests per minute
+    rate_limit_rate=30,
+    # Enable HTTP/2
+    http2=True,
+    # Custom headers
+    headers={"X-Custom-Header": "value"},
+    # Request timeout in seconds
+    timeout=30.0
+)
 
 client = Client24SO(
-    client_id="your_client_id",
-    client_secret="your_client_secret",
-    organization_id="your_organization_id",
-    options=ClientOptions(
-        base_url="https://rest.api.24sevenoffice.com/v1",
-        cache_enabled=True,
-        cache_max_size=100,  # Cache up to 100 responses
-        cache_ttl=300,  # Cache TTL in seconds
-        rate_limit_rate=100,  # Requests per minute
-        timeout=30.0,  # Request timeout in seconds
-        http2=False,  # Use HTTP/2
-    )
+    client_id="your-client-id",
+    client_secret="your-client-secret",
+    organization_id="your-organization-id",
+    options=options
 )
 ```
 
 ## Development
 
-### Setting up the development environment
+### Setup
 
-With pip:
-```bash
-# Create virtual environment
-python -m venv .venv
-# Activate virtual environment
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows
-# Install development dependencies
-pip install -e ".[dev,docs]"
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/py24so.git
+   cd py24so
+   ```
 
-With UV (faster):
-```bash
-# Create virtual environment
-uv venv
-# Activate virtual environment
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows
-# Install development dependencies
-uv pip install -e ".[dev,docs]"
-```
+2. Install development dependencies:
+   ```bash
+   pip install -e ".[dev]"
+   ```
 
-### Running tests
-```bash
-pytest
-# With coverage
-pytest --cov=py24so
-```
+3. Run the tests:
+   ```bash
+   pytest
+   ```
 
-## Contributing
+### Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch
+3. Add your changes
+4. Run tests and ensure they pass
+5. Submit a pull request
+
+## GitHub Actions
+
+This project includes GitHub Actions for continuous integration and deployment:
+
+1. **CI**: Runs on every push to main and on pull requests to main
+   - Tests on multiple Python versions
+   - Code quality checks
+   - Code coverage reporting
+
+2. **Publish to PyPI**: Triggered on new releases or manually
+   - Builds the package
+   - Runs tests
+   - Publishes to PyPI if all checks pass
+
+### Manual Release
+
+To manually trigger a release:
+
+1. Go to the Actions tab in your GitHub repository
+2. Select the "Publish to PyPI" workflow
+3. Click "Run workflow"
+4. Enter the version number (e.g., "0.1.1") and submit
+
+**Note**: You need to add a PyPI API token as a secret in your GitHub repository settings:
+1. Generate a token on PyPI: https://pypi.org/manage/account/token/
+2. Add it as a repository secret named `PYPI_API_TOKEN`
 
 ## License
 
