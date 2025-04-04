@@ -13,6 +13,8 @@ jobs:
   build-and-publish:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     
     steps:
     - name: Checkout code
@@ -57,10 +59,6 @@ jobs:
     - name: Publish to PyPI
       if: success()
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        # Uncomment the following line to publish to Test PyPI first
-        # repository_url: https://test.pypi.org/legacy/
 
 # NOTE: You need to add a PYPI_API_TOKEN secret in your GitHub repository settings
 # 1. Go to PyPI and create an API token: https://pypi.org/manage/account/token/
