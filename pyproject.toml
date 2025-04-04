@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py24so"
-version = "0.2.0"
+version = "0.2.1"
 description = "Modern Python client for the 24SevenOffice API"
 authors = [
     {name = "Sondre Dyrnes", email = "sondre@villdyr.no"}
