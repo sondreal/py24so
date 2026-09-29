@@ -1,169 +1,86 @@
 """
-Basic usage example for the 24SevenOffice API client.
+Basic usage of py24so.
 
-This example demonstrates how to use the client to interact with the API.
+Set your credentials first:
+
+    export PY24SO_CLIENT_ID=...
+    export PY24SO_CLIENT_SECRET=...
+    export PY24SO_ORGANIZATION_ID=...
+
+    python examples/basic_usage.py            # read-only tour
+    python examples/basic_usage.py --invoice  # also creates and invoices a sales order
 """
 
-import os
-from dotenv import load_dotenv
+import asyncio
+import logging
+import sys
 
-from py24so import Client24SO, AsyncClient24SO
-from py24so.models.config import ClientOptions
-from py24so.models.customer import CustomerCreate, Address, Contact
-from py24so.models.invoice import InvoiceCreate, InvoiceLineItem
-from py24so.models.product import ProductCreate, PriceInfo
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Get API credentials from environment variables
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-organization_id = os.getenv("ORGANIZATION_ID")
-
-# Configure client options
-options = ClientOptions(
-    cache_enabled=True,
-    rate_limit_rate=30,  # 30 requests per minute
-)
+from py24so import AsyncClient24SO, BadRequestError, Client24SO, NotFoundError
+from py24so import models as m
 
 
-def sync_example():
-    """Synchronous API client example."""
-    
-    # Create client
-    with Client24SO(
-        client_id=client_id,
-        client_secret=client_secret,
-        organization_id=organization_id,
-        options=options,
-    ) as client:
-        # Create a new customer
-        new_customer = CustomerCreate(
-            name="Acme Inc.",
-            email="info@acme.com",
-            phone="123-456-7890",
-            addresses=[
-                Address(
-                    street="123 Main St",
-                    city="Oslo",
-                    postal_code="0150",
-                    country="Norway",
-                    type="Billing",
-                ),
-            ],
-            contacts=[
-                Contact(
-                    first_name="John",
-                    last_name="Doe",
-                    email="john.doe@acme.com",
-                    phone="123-456-7891",
-                ),
-            ],
+def read_only_tour(client: Client24SO) -> None:
+    organization = client.organization.get()
+    print(f"Connected to {organization.name} (id {organization.id})")
+
+    print("\nVAT codes:")
+    for tax in client.taxes.list():
+        print(f"  {tax.number:>3}  {tax.rate:>5}%  {tax.name}")
+
+    print("\nFirst 10 companies, sorted by name (pages are fetched as needed):")
+    for customer in client.customers.list(is_company=True, sort_by="name:asc").to_list(10):
+        print(f"  {customer.id:>8}  {customer.name}")
+
+    print("\nDraft sales orders:")
+    for order in client.sales_orders.list(status=m.SalesOrderStatus.DRAFT).to_list(5):
+        print(
+            f"  #{order.id}  {order.customer.name if order.customer else '?'}  {order.gross_amount}"
         )
-        
-        customer = client.customers.create(new_customer)
-        print(f"Created customer: {customer.name} (ID: {customer.id})")
-        
-        # Create a new product
-        new_product = ProductCreate(
-            name="Widget Pro",
-            description="Professional grade widget",
-            price_info=PriceInfo(
-                price=99.99,
-                vat_rate=25.0,
-                unit="pcs",
-            ),
-        )
-        
-        product = client.products.create(new_product)
-        print(f"Created product: {product.name} (ID: {product.id})")
-        
-        # Create an invoice for the customer
-        new_invoice = InvoiceCreate(
-            customer_id=customer.id,
-            line_items=[
-                InvoiceLineItem(
-                    description=product.name,
-                    quantity=2,
-                    unit_price=product.price_info.price,
-                    vat_rate=product.price_info.vat_rate,
-                    product_id=product.id,
-                    unit=product.price_info.unit,
-                ),
-            ],
-        )
-        
-        invoice = client.invoices.create(new_invoice)
-        print(f"Created invoice: {invoice.invoice_number} (ID: {invoice.id})")
-        
-        # Send the invoice to the customer
-        sent_invoice = client.invoices.send(invoice.id)
-        print(f"Sent invoice {sent_invoice.invoice_number} to {customer.name}")
-        
-        # Fetch a list of customers
-        customers = client.customers.list(page=1, page_size=10)
-        print(f"Found {len(customers)} customers")
-        
-        # Fetch a list of products
-        products = client.products.list(page=1, page_size=10)
-        print(f"Found {len(products)} products")
-        
-        # Fetch a list of invoices
-        invoices = client.invoices.list(page=1, page_size=10)
-        print(f"Found {len(invoices)} invoices")
+
+    try:
+        client.customers.get(2_000_000_000)
+    except NotFoundError as err:
+        print(f"\nMissing customers raise NotFoundError (tracking id: {err.tracking_id})")
 
 
-async def async_example():
-    """Asynchronous API client example."""
-    import asyncio
-    
-    # Create client
-    async with AsyncClient24SO(
-        client_id=client_id,
-        client_secret=client_secret,
-        organization_id=organization_id,
-        options=options,
-    ) as client:
-        # Fetch a list of customers
-        customers = await client.customers.list(page=1, page_size=10)
-        print(f"[Async] Found {len(customers)} customers")
-        
-        # Fetch a list of products
-        products = await client.products.list(page=1, page_size=10)
-        print(f"[Async] Found {len(products)} products")
-        
-        # Fetch a list of invoices
-        invoices = await client.invoices.list(page=1, page_size=10)
-        print(f"[Async] Found {len(invoices)} invoices")
-        
-        # Fetch multiple resources concurrently
-        customer_task = client.customers.get(customers[0].id if customers else "123")
-        product_task = client.products.get(products[0].id if products else "456")
-        invoice_task = client.invoices.get(invoices[0].id if invoices else "789")
-        
-        # Wait for all tasks to complete
-        results = await asyncio.gather(
-            customer_task, 
-            product_task, 
-            invoice_task,
-            return_exceptions=True,
+def create_and_invoice(client: Client24SO) -> None:
+    customer = client.customers.create(
+        m.CustomerCreate(
+            is_company=True,
+            name="py24so Example AS",
+            email=m.CustomerEmail(billing="invoice@example.com"),
         )
-        
-        # Process results
-        for result in results:
-            if isinstance(result, Exception):
-                print(f"[Async] Error: {result}")
-            else:
-                print(f"[Async] Retrieved: {result}")
+    )
+    order = client.sales_orders.create(
+        m.SalesOrderCreate(customer=m.SalesOrderCustomer(id=customer.id))
+    )
+    client.sales_orders.lines.create(
+        order.id,
+        m.SalesOrderLineCreate(
+            type=m.LineType.TEXT, description="Consulting", quantity=2, price=1250
+        ),
+    )
+    try:
+        invoiced = client.sales_orders.invoice(order.id)
+    except BadRequestError as err:
+        print(f"Could not invoice: {err} {err.errors}")
+        return
+    print(f"Sales order {invoiced.id} is now {invoiced.status}")
+
+
+async def async_example() -> None:
+    async with AsyncClient24SO() as client:
+        taxes, currencies = await asyncio.gather(client.taxes.list(), client.currencies.list())
+        print(f"\n[async] {len(taxes)} VAT codes, {len(currencies)} currencies")
+        async for product in client.products.list(page_size=50):
+            print(f"[async] first product: {product.name}")
+            break
 
 
 if __name__ == "__main__":
-    # Run synchronous example
-    print("\n=== Running synchronous example ===\n")
-    sync_example()
-    
-    # Run asynchronous example
-    print("\n=== Running asynchronous example ===\n")
-    import asyncio
-    asyncio.run(async_example()) 
+    logging.basicConfig(level=logging.INFO)  # DEBUG logs every request
+    with Client24SO() as client:
+        read_only_tour(client)
+        if "--invoice" in sys.argv:
+            create_and_invoice(client)
+    asyncio.run(async_example())
