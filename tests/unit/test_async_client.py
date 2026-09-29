@@ -216,3 +216,20 @@ def test_parse_token_response_defaults() -> None:
     assert token.authorization == "Bearer s3cr3t-jwt"
     assert not token.is_expired(margin=60)  # unparseable expires_in falls back to 1 hour
     assert "s3cr3t-jwt" not in repr(token)
+
+
+async def test_wait_stops_on_failed_processing(api: FakeAPI) -> None:
+    from py24so import APIError
+
+    api.add("GET", "/fileUpload/7", json_response({"fileId": 7, "status": "Failed"}))
+    client = make_client(api)
+    with pytest.raises(APIError, match="failed") as info:
+        await client.files.wait_until_processed("7", timeout=60)
+    assert not isinstance(info.value, APITimeoutError)
+    assert len(api.requests) == 1
+
+
+def test_numeric_file_ids_are_accepted() -> None:
+    from py24so import models as m
+
+    assert m.FileUpload.model_validate({"fileId": 67890}).file_id == "67890"

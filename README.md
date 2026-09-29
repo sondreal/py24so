@@ -73,7 +73,7 @@ The API has no separate invoice endpoint. You invoice a **sales order** by addin
 ```python
 order = client.sales_orders.create(
     m.SalesOrderCreate(
-        customer=m.SalesOrderCustomer(id=customer.id),
+        customer=m.SalesOrderCustomer(id=customer.id, name=customer.name),
         invoice=m.SalesOrderInvoice(
             payment_terms=m.PaymentTerms(type=m.PaymentTermsType.NUMBER_OF_DAYS, value=14)
         ),

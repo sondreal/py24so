@@ -52,7 +52,7 @@ def create_and_invoice(client: Client24SO) -> None:
         )
     )
     order = client.sales_orders.create(
-        m.SalesOrderCreate(customer=m.SalesOrderCustomer(id=customer.id))
+        m.SalesOrderCreate(customer=m.SalesOrderCustomer(id=customer.id, name=customer.name))
     )
     client.sales_orders.lines.create(
         order.id,

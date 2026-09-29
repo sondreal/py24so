@@ -2,7 +2,7 @@ import time
 from typing import Optional, Union
 
 from py24so._utils import FileInput, path_param, read_file
-from py24so.exceptions import APITimeoutError
+from py24so.exceptions import APIError, APITimeoutError
 from py24so.models.accounting import Document, FileUpload, FileUploadStatus
 from py24so.resources._async._resource import AsyncResource
 
@@ -11,8 +11,8 @@ class AsyncFiles(AsyncResource):
     """``/fileUpload``: upload files (e.g. receipts) to the document archive.
 
     Uploading is a two-step process: :meth:`create_upload` returns a pre-signed
-    URL, the bytes are sent there, and the file is processed asynchronously into
-    a document. :meth:`upload` does all of it in one call.
+    URL, the bytes are sent there, and the file is then processed into a
+    document in the background. :meth:`upload` does all of it in one call.
     """
 
     async def create_upload(self, content_type: str) -> FileUpload:
@@ -69,6 +69,7 @@ class AsyncFiles(AsyncResource):
         """Poll :meth:`get_status` until the file has a ``document_id``.
 
         Raises:
+            APIError: If processing failed (status ``Failed``).
             APITimeoutError: If the file is not processed within ``timeout`` seconds.
         """
         deadline = time.monotonic() + timeout
@@ -76,6 +77,8 @@ class AsyncFiles(AsyncResource):
             status = await self.get_status(file_id)
             if status.document_id is not None:
                 return status
+            if (status.status or "").lower() == "failed":
+                raise APIError(f"Processing of file {file_id} failed (status {status.status!r})")
             if time.monotonic() + poll_interval > deadline:
                 raise APITimeoutError(
                     f"File {file_id} was not processed within {timeout:.0f}s "

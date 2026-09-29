@@ -46,7 +46,7 @@ class PaymentTerms(Py24soModel):
 
 
 class SalesOrderCustomer(Py24soModel):
-    """The invoiced customer. On create, ``{"id": ...}`` is enough."""
+    """The invoiced customer. When creating an order, the spec requires ``id`` and ``name``."""
 
     id: Optional[int] = None
     organization_number: Optional[str] = None
@@ -139,9 +139,11 @@ class SalesOrder(_SalesOrderFields):
 
 
 class SalesOrderCreate(_SalesOrderFields):
-    """Payload for ``POST /salesorders``::
+    """Payload for ``POST /salesorders``.
 
-    SalesOrderCreate(customer=SalesOrderCustomer(id=123), memo="Thanks!")
+    The spec requires ``customer.id`` and ``customer.name``::
+
+        SalesOrderCreate(customer=SalesOrderCustomer(id=123, name="Acme AS"), memo="Thanks!")
     """
 
     customer: SalesOrderCustomer

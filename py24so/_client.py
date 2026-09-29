@@ -199,9 +199,9 @@ class _BaseAPIClient:
             # Never send the bearer token to a host other than the API.
             raise APIConnectionError(f"Refusing to send credentials to foreign URL {url}")
 
-    def resolve_link(self, link: str) -> str:
-        """Resolve a ``Link`` header URL (absolute, root-relative or relative)."""
-        url = self._base_url.join(link)
+    def resolve_link(self, link: str, base: Optional[httpx.URL] = None) -> str:
+        """Resolve a ``Link`` header URL against the URL it was returned for (RFC 8288)."""
+        url = (base or self._base_url).join(link)
         self._check_same_origin(url)
         return str(url)
 

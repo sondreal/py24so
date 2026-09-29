@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import Field
 
-from py24so.models._base import Date, Py24soModel, Timestamp
+from py24so.models._base import Date, Py24soModel, StrId, Timestamp
 from py24so.models.common import DimensionValue, IdRef
 
 
@@ -208,12 +208,15 @@ class FileUpload(Py24soModel):
 
     upload_method: Optional[str] = None
     upload_url: Optional[str] = None
-    file_id: Optional[str] = None
+    file_id: StrId = None
 
 
 class FileUploadStatus(Py24soModel):
-    """Processing status of an uploaded file; ``document_id`` is set once archived."""
+    """Processing status of an uploaded file (e.g. ``Pending``, ``Completed``, ``Failed``).
 
-    file_id: Optional[str] = None
+    ``document_id`` is set once the file has been archived.
+    """
+
+    file_id: StrId = None
     status: Optional[str] = None
     document_id: Optional[int] = None

@@ -76,7 +76,7 @@ class Product(_ProductFields):
 
 
 class ProductCreate(_ProductFields):
-    """Payload for ``POST /products``.
+    """Payload for ``POST /products``. The spec requires ``name`` and ``category``.
 
     ``units``, ``category`` and ``supplier`` reference existing objects by id::
 

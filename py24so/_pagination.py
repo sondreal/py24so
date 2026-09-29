@@ -100,9 +100,8 @@ class _PageState:
 
     def advance(self, resolved_next: Optional[str], page: "Page[Any]") -> bool:
         """Move to the next page. Returns ``False`` when pagination is finished."""
-        if not page.items:
-            return False
-
+        # Continuation-token APIs may return an empty page that still has a next
+        # link, so follow it; seen_urls and is_repeat() prevent endless loops.
         if resolved_next is not None:
             if resolved_next in self.seen_urls:
                 return False
@@ -112,7 +111,8 @@ class _PageState:
             return True
 
         if (
-            self.page_param
+            page.items
+            and self.page_param
             and page.response.links.get("next") is None
             and self.page_size is not None
             and len(page.items) >= self.page_size
@@ -154,7 +154,9 @@ class Paginator(Generic[T]):
             next_url = _next_link(response)
             page = Page(items, response, next_url)
             yield page
-            resolved = self._client.resolve_link(next_url) if next_url else None
+            resolved = (
+                self._client.resolve_link(next_url, response.request.url) if next_url else None
+            )
             if not state.advance(resolved, page):
                 return
 
@@ -209,7 +211,9 @@ class AsyncPaginator(Generic[T]):
             next_url = _next_link(response)
             page = Page(items, response, next_url)
             yield page
-            resolved = self._client.resolve_link(next_url) if next_url else None
+            resolved = (
+                self._client.resolve_link(next_url, response.request.url) if next_url else None
+            )
             if not state.advance(resolved, page):
                 return
 

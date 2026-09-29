@@ -113,10 +113,10 @@ def test_stops_on_link_loop(api: FakeAPI, client: Any) -> None:
     assert len(api.requests) == 2
 
 
-def test_stops_on_empty_page_even_with_next_link(api: FakeAPI, client: Any) -> None:
+def test_stops_on_repeated_empty_pages(api: FakeAPI, client: Any) -> None:
     api.add("GET", "/customers", json_response([], headers=link("/v1/customers?page=2")))
     assert client.customers.list().to_list() == []
-    assert len(api.requests) == 1
+    assert len(api.requests) == 2  # the identical second page stops the loop
 
 
 def test_page_number_fallback_without_link_header(api: FakeAPI, client: Any) -> None:
@@ -208,3 +208,27 @@ def test_http_error_mid_pagination_raises(api: FakeAPI, client: Any) -> None:
 
     with pytest.raises(NotFoundError, match="gone"):
         client.customers.list().to_list()
+
+
+def test_relative_links_resolve_against_the_request_url(api: FakeAPI, client: Any) -> None:
+    api.add(
+        "GET",
+        "/dimensions/1/elements",
+        json_response(
+            [{"dimensionType": 1, "value": "a"}], headers=link("elements?continuationToken=x")
+        ),
+        json_response([{"dimensionType": 1, "value": "b"}]),
+    )
+    assert [e.value for e in client.dimensions.elements.list(1)] == ["a", "b"]
+    assert api.last.url.path == "/v1/dimensions/1/elements"
+    assert dict(api.last.url.params) == {"continuationToken": "x"}
+
+
+def test_empty_page_with_next_link_is_followed(api: FakeAPI, client: Any) -> None:
+    api.add(
+        "GET",
+        "/salesorders",
+        json_response([], headers=link("/v1/salesorders?continuationToken=a")),
+        json_response([{"id": 7}]),
+    )
+    assert [o.id for o in client.sales_orders.list()] == [7]

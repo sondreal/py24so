@@ -4,7 +4,7 @@ from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, ValidationError, ValidatorFunctionWrapHandler
 from pydantic.alias_generators import to_camel
-from pydantic.functional_validators import WrapValidator
+from pydantic.functional_validators import BeforeValidator, WrapValidator
 
 logger = logging.getLogger("py24so")
 
@@ -56,6 +56,14 @@ def _lenient(value: Any, handler: ValidatorFunctionWrapHandler, info: Any) -> An
 #: ISO 8601). In API responses, empty or malformed values degrade to ``None``
 #: (with a warning) instead of failing the whole response.
 Timestamp = Annotated[Optional[datetime], WrapValidator(_lenient)]
+
+
+def _number_to_str(value: Any) -> Any:
+    return str(value) if isinstance(value, int) and not isinstance(value, bool) else value
+
+
+#: A string identifier that the API sometimes sends as a number (e.g. ``fileId``).
+StrId = Annotated[Optional[str], BeforeValidator(_number_to_str)]
 
 #: A date with the same tolerance as :data:`Timestamp`.
 Date = Annotated[Optional[date], WrapValidator(_lenient)]

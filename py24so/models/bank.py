@@ -56,7 +56,10 @@ class BankAccount(_BankAccountFields):
 
 
 class BankAccountCreate(_BankAccountFields):
-    """Payload for ``POST /bankaccounts``."""
+    """Payload for ``POST /bankaccounts``.
+
+    The spec requires ``number``, ``bic``, ``type``, ``name`` and ``owner``.
+    """
 
 
 class BankTransactionType(str, Enum):
@@ -120,4 +123,8 @@ class BankTransaction(_BankTransactionFields):
 
 
 class BankTransactionCreate(_BankTransactionFields):
-    """Payload for ``POST /banktransactions``. ``date`` is an ISO 8601 date string."""
+    """Payload for ``POST /banktransactions``. ``date`` is an ISO 8601 date string.
+
+    The spec requires ``bank_transaction_reference``, ``type``, ``bank_account``,
+    ``payment_reference``, ``amount`` and ``date``.
+    """
