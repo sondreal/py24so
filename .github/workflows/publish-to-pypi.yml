@@ -18,22 +18,22 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         
     - name: Update version if manually triggered
       if: github.event_name == 'workflow_dispatch'
       run: |
-        # Replace version in pyproject.toml
-        sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ github.event.inputs.version }}\"/g" pyproject.toml
+        # The version is single-sourced from py24so/_version.py
+        sed -i "s/__version__ = \"[^\"]*\"/__version__ = \"${{ github.event.inputs.version }}\"/" py24so/_version.py
         # Create a tag for this version
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add pyproject.toml
+        git add py24so/_version.py
         git commit -m "Bump version to ${{ github.event.inputs.version }}"
         git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
         git push origin "v${{ github.event.inputs.version }}"
@@ -60,7 +60,5 @@ jobs:
       if: success()
       uses: pypa/gh-action-pypi-publish@release/v1
 
-# NOTE: You need to add a PYPI_API_TOKEN secret in your GitHub repository settings
-# 1. Go to PyPI and create an API token: https://pypi.org/manage/account/token/
-# 2. Go to your GitHub repo settings -> Secrets -> Actions -> New repository secret
-# 3. Name it PYPI_API_TOKEN and paste the token value 
+# Publishing uses PyPI trusted publishing (the `id-token: write` permission above);
+# no API token secret is needed once the project is configured on PyPI. 

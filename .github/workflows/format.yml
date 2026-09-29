@@ -12,12 +12,12 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref }}
         
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         
@@ -28,11 +28,11 @@ jobs:
         
     - name: Format with Black
       run: |
-        black py24so tests
+        black py24so tests scripts examples
         
     - name: Sort imports with isort
       run: |
-        isort py24so tests
+        isort py24so tests scripts examples
         
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
